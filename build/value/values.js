@@ -5,4 +5,5 @@ var Values;
 (function (Values) {
     Values[Values["port"] = 8080] = "port";
     Values["mongoURI"] = "mongodb://localhost:27017/miniuber";
+    Values["jwtSecret"] = "uhkrferfgbbuiu8bwsefhwfguwbwjhcw";
 })(Values = exports.Values || (exports.Values = {}));

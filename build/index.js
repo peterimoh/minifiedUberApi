@@ -8,12 +8,10 @@ const morgan_1 = __importDefault(require("morgan"));
 const AppRouter_1 = require("./AppRouter");
 const values_1 = require("./value/values");
 require("./config/db.connection");
+require("./controller/router");
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use((0, morgan_1.default)('dev'));
 app.use(AppRouter_1.AppRouter.getInstance());
-app.get('/', (req, res) => {
-    res.send('Hello World');
-});
 app.listen(values_1.Values.port, () => console.log(`Server is running on port ${values_1.Values.port}`));
