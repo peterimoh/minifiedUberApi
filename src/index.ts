@@ -3,6 +3,7 @@ import morgan from 'morgan';
 
 import { AppRouter } from './AppRouter';
 import { Values } from './value/values';
+import './config/db.connection';
 
 const app: Express = express();
 

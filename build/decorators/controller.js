@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.controller = void 0;
+require("reflect-metadata");
 const AppRouter_1 = require("../AppRouter");
 const MetadataKeys_1 = require("./MetadataKeys");
-require('reflect-metadata');
 function bodyValidators(keys) {
     return (req, res, next) => {
         if (!req.body) {
