@@ -1,8 +1,8 @@
 import express, { Express } from 'express';
 import morgan from 'morgan';
 
-import { PORT } from './value/values';
 import { AppRouter } from './AppRouter';
+import { Values } from './value/values';
 
 const app: Express = express();
 
@@ -15,4 +15,6 @@ app.get('/', (req, res) => {
   res.send('Hello World');
 });
 
-app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
+app.listen(Values.port, () =>
+  console.log(`Server is running on port ${Values.port}`)
+);

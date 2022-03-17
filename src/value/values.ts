@@ -1,1 +1,3 @@
-export const PORT: number = 8080;
+export enum Values {
+  port = 8080,
+}

@@ -1,21 +1,12 @@
 "use strict";
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.use = void 0;
 require("reflect-metadata");
-var MetadataKeys_1 = require("./MetadataKeys");
-var use = function (middleware) {
-    return function (target, key, desc) {
-        var middlewares = Reflect.getMetadata(MetadataKeys_1.MetaData.middleware, target, key) || [];
-        Reflect.defineMetadata(MetadataKeys_1.MetaData.middleware, __spreadArray(__spreadArray([], middlewares, true), [middleware], false), target, key);
+const MetadataKeys_1 = require("./MetadataKeys");
+const use = (middleware) => {
+    return (target, key, desc) => {
+        const middlewares = Reflect.getMetadata(MetadataKeys_1.MetaData.middleware, target, key) || [];
+        Reflect.defineMetadata(MetadataKeys_1.MetaData.middleware, [...middlewares, middleware], target, key);
     };
 };
 exports.use = use;

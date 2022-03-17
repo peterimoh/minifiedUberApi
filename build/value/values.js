@@ -1,4 +1,7 @@
 "use strict";
-exports.__esModule = true;
-exports.PORT = void 0;
-exports.PORT = 8080;
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Values = void 0;
+var Values;
+(function (Values) {
+    Values[Values["port"] = 8080] = "port";
+})(Values = exports.Values || (exports.Values = {}));
