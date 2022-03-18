@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.patcher = exports.poster = exports.getter = void 0;
+exports.putter = exports.patcher = exports.poster = exports.getter = void 0;
 require("reflect-metadata");
 const MetadataKeys_1 = require("./MetadataKeys");
 const Methods_1 = require("./Methods");
@@ -15,3 +15,4 @@ const routeBinder = (method) => {
 exports.getter = routeBinder(Methods_1.Methods.get);
 exports.poster = routeBinder(Methods_1.Methods.post);
 exports.patcher = routeBinder(Methods_1.Methods.patch);
+exports.putter = routeBinder(Methods_1.Methods.put);

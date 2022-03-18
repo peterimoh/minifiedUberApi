@@ -39,25 +39,29 @@ function validatePassword(password, hashedPassword) {
 }
 let LoginController = class LoginController {
     // ======================= register endpoint ==============================================
-    post_Register(req, res) {
+    postRegister(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             const { firstName, lastName, email, password, vehicle, isDriver, isAvailable, } = req.body;
             const hashedPassword = yield hashPassword(password);
-            yield user_model_1.User.findOne({ email }).then((user) => {
-                if (user)
-                    return res.status(402).json({ msg: 'User Already Exist' });
-            });
-            let newUser = new user_model_1.User({
-                firstName,
-                lastName,
-                email,
-                password: hashedPassword,
-                vehicle,
-                isDriver,
-                isAvailable,
-            });
-            yield newUser.save();
-            return res.status(200).json({ msg: 'New user Created, Proceed to Login' });
+            user_model_1.User.findOne({ email }).then((user) => __awaiter(this, void 0, void 0, function* () {
+                if (user) {
+                    console.log({ error: 'User already exists' });
+                }
+                else {
+                    let newUser = new user_model_1.User({
+                        firstName,
+                        lastName,
+                        email,
+                        password: hashedPassword,
+                        vehicle,
+                        isDriver,
+                        isAvailable,
+                    });
+                    yield newUser.save().then((user) => {
+                        res.status(200).json({ message: 'User Created' });
+                    });
+                }
+            }));
         });
     }
     // ====================== login endpoint =======================================================
@@ -66,16 +70,54 @@ let LoginController = class LoginController {
             const { email, password } = req.body;
             const user = yield user_model_1.User.findOne({ email });
             if (!user)
-                return res.status(402).json({ msg: 'User does not exist' });
+                return res.status(422).json({ error: 'User does not exist' });
             const comparePassword = yield validatePassword(password, user.password);
             if (!comparePassword)
-                return res.status(403).json({ msg: 'Invalid Password' });
+                return res.status(422).json({ error: 'Invalid Password' });
             const usr = {
                 email: user.email,
                 id: user._id,
             };
             const token = jsonwebtoken_1.default.sign({ usr }, values_1.Values.jwtSecret, { expiresIn: '24h' });
-            res.status(200).json({ token });
+            res.status(200).json({ token, user });
+        });
+    }
+    // ===================== get Available Drivers =================================================
+    getAvailableDriver(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { available } = req.params;
+            const driver = yield user_model_1.User.find({ isDriver: true, isAvailable: available });
+            res.status(200).json(driver);
+        });
+    }
+    // ===================== toggle is available status ==============================================================
+    putterDriver(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id } = req.params;
+            console.log(req.body);
+            const { isAvailable, latitude, longitude } = req.body;
+            const driver = yield user_model_1.User.findById(id);
+            if (!driver)
+                return res.status(422).json({ error: 'Driver does not exist' });
+            driver.isAvailable = isAvailable;
+            driver.latitude = latitude;
+            driver.longitude = longitude;
+            yield driver.save();
+            res.status(200).json({ msg: 'Driver status changed' });
+        });
+    }
+    // ===================== toggle is booked status ==============================================================
+    posterDriverBooked(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id } = req.params;
+            console.log(req.body);
+            const { isBooked } = req.body;
+            const driver = yield user_model_1.User.findById(id);
+            if (!driver)
+                return res.status(422).json({ error: 'Driver does not exist' });
+            driver.isBooked = isBooked;
+            yield driver.save();
+            res.status(200).json({ msg: 'Driver status changed' });
         });
     }
 };
@@ -83,9 +125,9 @@ __decorate([
     (0, index_1.poster)('/register'),
     (0, index_1.RequestBodyValidator)('firstName', 'lastName', 'email', 'password'),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:paramtypes", [Object, Object, Function]),
     __metadata("design:returntype", Promise)
-], LoginController.prototype, "post_Register", null);
+], LoginController.prototype, "postRegister", null);
 __decorate([
     (0, index_1.poster)('/login'),
     (0, index_1.RequestBodyValidator)('email', 'password'),
@@ -93,6 +135,24 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], LoginController.prototype, "postLogin", null);
+__decorate([
+    (0, index_1.getter)('/driver/:available'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], LoginController.prototype, "getAvailableDriver", null);
+__decorate([
+    (0, index_1.putter)('/driver/availability/:id'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], LoginController.prototype, "putterDriver", null);
+__decorate([
+    (0, index_1.poster)('/driver/booked/:id'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], LoginController.prototype, "posterDriverBooked", null);
 LoginController = __decorate([
     (0, index_1.controller)('/api')
 ], LoginController);

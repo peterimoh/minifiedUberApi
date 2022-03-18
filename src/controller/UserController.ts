@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import JWT from 'jsonwebtoken';
 
@@ -6,6 +6,7 @@ import {
   getter,
   poster,
   patcher,
+  putter,
   controller,
   RequestBodyValidator,
 } from '../decorators/index';
@@ -26,7 +27,7 @@ class LoginController {
   // ======================= register endpoint ==============================================
   @poster('/register')
   @RequestBodyValidator('firstName', 'lastName', 'email', 'password')
-  async post_Register(req: Request, res: Response) {
+  async postRegister(req: Request, res: Response, next: NextFunction) {
     const {
       firstName,
       lastName,
@@ -39,22 +40,25 @@ class LoginController {
 
     const hashedPassword = await hashPassword(password);
 
-    await User.findOne({ email }).then((user) => {
-      if (user) return res.status(402).json({ msg: 'User Already Exist' });
-    });
+    User.findOne({ email }).then(async (user) => {
+      if (user) {
+        console.log({ error: 'User already exists' });
+      } else {
+        let newUser = new User({
+          firstName,
+          lastName,
+          email,
+          password: hashedPassword,
+          vehicle,
+          isDriver,
+          isAvailable,
+        });
 
-    let newUser = new User({
-      firstName,
-      lastName,
-      email,
-      password: hashedPassword,
-      vehicle,
-      isDriver,
-      isAvailable,
+        await newUser.save().then((user) => {
+          res.status(200).json({ message: 'User Created' });
+        });
+      }
     });
-
-    await newUser.save();
-    return res.status(200).json({ msg: 'New user Created, Proceed to Login' });
   }
 
   // ====================== login endpoint =======================================================
@@ -63,11 +67,11 @@ class LoginController {
   async postLogin(req: Request, res: Response) {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
-    if (!user) return res.status(402).json({ msg: 'User does not exist' });
+    if (!user) return res.status(422).json({ error: 'User does not exist' });
 
     const comparePassword = await validatePassword(password, user.password);
     if (!comparePassword)
-      return res.status(403).json({ msg: 'Invalid Password' });
+      return res.status(422).json({ error: 'Invalid Password' });
 
     const usr = {
       email: user.email,
@@ -75,6 +79,47 @@ class LoginController {
     };
 
     const token = JWT.sign({ usr }, Values.jwtSecret, { expiresIn: '24h' });
-    res.status(200).json({ token });
+    res.status(200).json({ token, user });
+  }
+
+  // ===================== get Available Drivers =================================================
+  @getter('/driver/:available')
+  async getAvailableDriver(req: Request, res: Response) {
+    const { available } = req.params;
+    const driver = await User.find({ isDriver: true, isAvailable: available });
+
+    res.status(200).json(driver);
+  }
+
+  // ===================== toggle is available status ==============================================================
+  @putter('/driver/availability/:id')
+  async putterDriver(req: Request, res: Response) {
+    const { id } = req.params;
+    console.log(req.body);
+    const { isAvailable, latitude, longitude } = req.body;
+    const driver = await User.findById(id);
+    if (!driver)
+      return res.status(422).json({ error: 'Driver does not exist' });
+
+    driver.isAvailable = isAvailable;
+    driver.latitude = latitude;
+    driver.longitude = longitude;
+    await driver.save();
+    res.status(200).json({ msg: 'Driver status changed' });
+  }
+
+  // ===================== toggle is booked status ==============================================================
+  @poster('/driver/booked/:id')
+  async posterDriverBooked(req: Request, res: Response) {
+    const { id } = req.params;
+    console.log(req.body);
+    const { isBooked } = req.body;
+    const driver = await User.findById(id);
+    if (!driver)
+      return res.status(422).json({ error: 'Driver does not exist' });
+
+    driver.isBooked = isBooked;
+    await driver.save();
+    res.status(200).json({ msg: 'Driver status changed' });
   }
 }

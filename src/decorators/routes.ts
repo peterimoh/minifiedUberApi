@@ -20,3 +20,4 @@ const routeBinder = (method: string) => {
 export const getter = routeBinder(Methods.get);
 export const poster = routeBinder(Methods.post);
 export const patcher = routeBinder(Methods.patch);
+export const putter = routeBinder(Methods.put);
